@@ -1,26 +1,59 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import WiiMoteAccel from "./Components/WiiMoteAccel";
+import WiiMoteButtons from "./Components/WiiMoteButtons";
+import WiiMoteFeedback from "./Components/WiiMoteFeedback";
+import WiiMote from "./WiimoteLib/WiiMote";
+import { WiiMoteConnectionHelper } from "./WiimoteLib/WiiMote/WiiMoteConnectionHelper";
 
-function App() {
+export default () => {
+  const helper = new WiiMoteConnectionHelper();
+  const [wiiMote, setWiiMote] = useState<WiiMote | null>(null);
+  const [error, setError] = useState("");
   return (
     <div className="App">
+      <div>
+        <div>
+          <div>Step 1</div>
+          <div>Connect to the Wii Remote</div>
+          <div>
+            Either go to your settings and manually connect or use the web API
+            via the button
+          </div>
+          {helper.bluetoothDevice && <div>Bluetooth Device Detected</div>}
+          {helper.bluetoothServer && <div>Bluetooth Server Connected</div>}
+        </div>
+        <div>
+          <div>Step 2</div>
+          <div>Establish a HID connection</div>
+          <div>Enable the browser to access the raw HID APIs</div>
+          {helper.hidDevice && <div>HID Connection Established</div>}
+        </div>
+      </div>
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={() =>
+            helper
+              .connectViaBluetooth()
+              .catch((err) => setError(JSON.stringify(err)))
+          }
         >
-          Learn React
-        </a>
+          Connect to bluetooth
+        </button>
+        <button
+          onClick={() =>
+            helper
+              .connectViaHID()
+              .then((device) => setWiiMote(device))
+              .catch((err) => setError(err))
+          }
+        >
+          Connect to HID
+        </button>
+        {error && <div>{error}</div>}
       </header>
+      {wiiMote && <WiiMoteFeedback device={wiiMote} />}
+      {wiiMote && <WiiMoteButtons device={wiiMote} />}
+      {wiiMote && <WiiMoteAccel device={wiiMote} />}
     </div>
   );
-}
-
-export default App;
+};
