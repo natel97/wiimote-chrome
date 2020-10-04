@@ -2,6 +2,8 @@
 
 This is a fun website to test the idea of connecting an old Nintendo Wii Remote to a computer and utilizing the HID device APIs.
 
+Test it [here](https://wiimote-chrome.vercel.app/)!
+
 This website has been tested and works with Version 85.0.4183.121 of Google Chrome on Ubuntu and Windows. Your milage will vary.
 
 ## Requirements:
