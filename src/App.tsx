@@ -19,6 +19,16 @@ export default () => {
             Either go to your settings and manually connect or use the web API
             via the button
           </div>
+          <div>
+            In MacOS, you need to install
+            <a
+              href="https://github.com/dolphin-emu/WiimotePair"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              WiimotePair
+            </a>
+          </div>
           {helper.bluetoothDevice && <div>Bluetooth Device Detected</div>}
           {helper.bluetoothServer && <div>Bluetooth Server Connected</div>}
         </div>
