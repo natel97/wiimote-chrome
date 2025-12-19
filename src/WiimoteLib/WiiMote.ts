@@ -15,6 +15,7 @@ import {
   Bit1Buttons,
   Bit2Buttons,
   HIDDevice,
+  HIDInputReportEvent,
   ReportModes,
   Rumble,
   SOUND_REGISTERS,
@@ -24,6 +25,12 @@ import {
   WiiMoteActions,
   WMButtons,
 } from "./WiiMote/Types";
+
+declare global {
+  interface Window {
+    wiimote?: WiiMote;
+  }
+}
 
 export default class WiiMote {
   device: HIDDevice;
@@ -39,13 +46,13 @@ export default class WiiMote {
     this.status = new WiiMoteStatus();
     this.rawStatus = rawStatusFromStatus(this.status);
     this.setDataTracking(ReportModes.CORE_BUTTONS);
-    const w: any = window;
-    w.wiimote = this;
-    this.device.oninputreport = (e: any) => this.listenForUpdates(e);
+    window.wiimote = this;
+    this.device.oninputreport = (e) =>
+      this.listenForUpdates(e);
   }
 
   setRumble(isRumbling: boolean) {
-    let state = isRumbling ? Rumble.ON : Rumble.OFF;
+    const state = isRumbling ? Rumble.ON : Rumble.OFF;
     this.device.sendReport(
       WiiMoteActions.LED,
       numbersToBuffer([state + this.rawStatus.lastLight])
@@ -85,7 +92,7 @@ export default class WiiMote {
     this.device.sendReport(0xa20009, numbersToBuffer([0x01]));
     this.device.sendReport(0xa20001, numbersToBuffer([0x08]));
 
-    for (let register of SOUND_REGISTERS) {
+    for (const register of SOUND_REGISTERS) {
       this.device.sendReport(register, numbersToBuffer(status));
     }
 
@@ -101,7 +108,7 @@ export default class WiiMote {
     const newData = Array.from(data);
     this.device.sendReport(
       WiiMoteActions.SEND_SPEAKER_DATA,
-      new Int8Array(newData)
+      new Int8Array(newData).buffer
     );
   }
 
@@ -109,20 +116,28 @@ export default class WiiMote {
     this.device.sendReport(0x12, numbersToBuffer([0x00, trackingMode]));
   }
 
-  private listenForUpdates(event: any) {
+  private listenForUpdates(event: HIDInputReportEvent) {
     const [byte1, byte2] = Array.from(new Uint8Array(event.data.buffer));
-    this.matchBits(byte1, this.lastBit1Buttons, Bit1Buttons);
-    this.matchBits(byte2, this.lastBit2Buttons, Bit2Buttons);
+    this.matchBits(
+      byte1,
+      this.lastBit1Buttons,
+      Object.values(Bit1Buttons) as WMButtons[]
+    );
+    this.matchBits(
+      byte2,
+      this.lastBit2Buttons,
+      Object.values(Bit2Buttons) as WMButtons[]
+    );
   }
 
   public addButtonListener(
     key: WMButtons,
-    listener: (event: WMButtonEvent) => any
+    listener: (event: WMButtonEvent) => void | Promise<void>
   ) {
     this.listeners.push({ button: key, callback: listener });
   }
 
-  matchBits(bit: number, prevState: any[], nameDefs: any) {
+  matchBits(bit: number, prevState: number[], nameDefs: WMButtons[]) {
     for (let i = 0; i < 8; i++) {
       const buttonIsPressed = getBitInByte(bit, i + 1);
       if (nameDefs[i] && prevState[i] !== +buttonIsPressed) {

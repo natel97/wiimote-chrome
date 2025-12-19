@@ -21,7 +21,7 @@ export function rawStatusFromStatus(status: WiiMoteStatus): WiiMoteRawStatus {
 }
 
 export function numbersToBuffer(data: number[]): ArrayBuffer {
-  return new Int8Array(data);
+  return new Int8Array(data).buffer;
 }
 
 export function getBitInByte(byte: number, index: number) {
