@@ -118,16 +118,8 @@ export default class WiiMote {
 
   private listenForUpdates(event: HIDInputReportEvent) {
     const [byte1, byte2] = Array.from(new Uint8Array(event.data.buffer));
-    this.matchBits(
-      byte1,
-      this.lastBit1Buttons,
-      Object.values(Bit1Buttons) as WMButtons[]
-    );
-    this.matchBits(
-      byte2,
-      this.lastBit2Buttons,
-      Object.values(Bit2Buttons) as WMButtons[]
-    );
+    this.matchBits(byte1, this.lastBit1Buttons, Bit1Buttons);
+    this.matchBits(byte2, this.lastBit2Buttons, Bit2Buttons);
   }
 
   public addButtonListener(
@@ -137,10 +129,14 @@ export default class WiiMote {
     this.listeners.push({ button: key, callback: listener });
   }
 
-  matchBits(bit: number, prevState: number[], nameDefs: WMButtons[]) {
+  matchBits(
+    bit: number,
+    prevState: number[],
+    nameDefs: typeof Bit1Buttons | typeof Bit2Buttons
+  ) {
     for (let i = 0; i < 8; i++) {
       const buttonIsPressed = getBitInByte(bit, i + 1);
-      if (nameDefs[i] && prevState[i] !== +buttonIsPressed) {
+      if (nameDefs[i] !== undefined && prevState[i] !== +buttonIsPressed) {
         prevState[i] = +buttonIsPressed;
         this.listeners
           .filter((x) => x.button === nameDefs[i])
