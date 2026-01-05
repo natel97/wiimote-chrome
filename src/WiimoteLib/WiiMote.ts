@@ -122,6 +122,12 @@ export default class WiiMote {
     this.listeners.push({ button: key, callback: listener });
   }
 
+  public removeButtonListener(
+    callback: (event: WMButtonEvent) => void | Promise<void>
+  ) {
+    this.listeners = this.listeners.filter((x) => x.callback !== callback);
+  }
+
   matchBits(bit: number, prevState: any[], nameDefs: any) {
     for (let i = 0; i < 8; i++) {
       const buttonIsPressed = getBitInByte(bit, i + 1);
