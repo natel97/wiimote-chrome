@@ -51,19 +51,92 @@ export const SOUND_REGISTERS = [
   0xa20008,
 ];
 
+export interface HIDInputReportEvent extends Event {
+  readonly data: DataView;
+  readonly device: HIDDevice;
+  readonly reportId: number;
+}
+
 export type HIDDevice = {
-  oninputreport: any;
+  oninputreport: ((this: HIDDevice, ev: HIDInputReportEvent) => void) | null;
   opened: boolean;
   productId: number;
   productName: string;
   vendorId: number;
-  collections: any[];
-  open: () => Promise<any>;
-  close: () => Promise<any>;
-  sendReport: (reportId: number, data: ArrayBuffer) => Promise<any>;
-  sendFeatureReport: (reportId: number, data: ArrayBuffer) => Promise<any>;
-  receiveFeatureReport: () => void;
+  collections: HIDCollectionInfo[];
+  open: () => Promise<void>;
+  close: () => Promise<void>;
+  sendReport: (reportId: number, data: ArrayBuffer) => Promise<void>;
+  sendFeatureReport: (reportId: number, data: ArrayBuffer) => Promise<void>;
+  receiveFeatureReport: (reportId: number) => Promise<DataView>;
+  forget: () => Promise<void>;
+  addEventListener(
+    type: "inputreport",
+    listener: (this: HIDDevice, ev: HIDInputReportEvent) => void,
+    options?: boolean | AddEventListenerOptions
+  ): void;
+  addEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions
+  ): void;
+  removeEventListener(
+    type: "inputreport",
+    listener: (this: HIDDevice, ev: HIDInputReportEvent) => void,
+    options?: boolean | EventListenerOptions
+  ): void;
+  removeEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | EventListenerOptions
+  ): void;
 };
+
+export interface HIDCollectionInfo {
+  usagePage: number;
+  usage: number;
+  type: number;
+  children?: HIDCollectionInfo[];
+  inputReports?: HIDReportInfo[];
+  outputReports?: HIDReportInfo[];
+  featureReports?: HIDReportInfo[];
+}
+
+export interface HIDReportInfo {
+  reportId: number;
+  items: HIDReportItem[];
+}
+
+export interface HIDReportItem {
+  isAbsolute?: boolean;
+  isArray?: boolean;
+  isBufferedBytes?: boolean;
+  isConstant?: boolean;
+  isLinear?: boolean;
+  isRange?: boolean;
+  isVolatile?: boolean;
+  hasNull?: boolean;
+  hasPreferredState?: boolean;
+  wrap?: boolean;
+  usages?: number[];
+  usageMinimum?: number;
+  usageMaximum?: number;
+  reportSize?: number;
+  reportCount?: number;
+  unitExponent?: number;
+  unitSystem?: number;
+  unitFactorLengthExponent?: number;
+  unitFactorMassExponent?: number;
+  unitFactorTimeExponent?: number;
+  unitFactorTemperatureExponent?: number;
+  unitFactorCurrentExponent?: number;
+  unitFactorLuminousIntensityExponent?: number;
+  logicalMinimum?: number;
+  logicalMaximum?: number;
+  physicalMinimum?: number;
+  physicalMaximum?: number;
+  strings?: string[];
+}
 
 export enum Bit1Buttons {
   DPAD_LEFT,
