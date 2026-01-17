@@ -129,6 +129,12 @@ export default class WiiMote {
     this.listeners.push({ button: key, callback: listener });
   }
 
+  public removeButtonListener(
+    callback: (event: WMButtonEvent) => void | Promise<void>
+  ) {
+    this.listeners = this.listeners.filter((x) => x.callback !== callback);
+  }
+
   matchBits(
     bit: number,
     prevState: number[],
