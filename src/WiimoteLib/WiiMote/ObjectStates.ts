@@ -30,7 +30,7 @@ export type WiiMoteRawStatus = {
 
 export type WMButtonEventList = {
   button: WMButtons;
-  callback: (payload: WMButtonEvent) => {};
+  callback: (payload: WMButtonEvent) => void | Promise<void>;
 };
 
 export type WMButtonEvent = {
